@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: #fafaf9;
+  color: #1c1917;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d6d3d1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a29e;
+}
+
+/* Smooth transitions */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-stone-100;
+  }
+  
+  .btn-primary {
+    @apply bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+  
+  .btn-secondary {
+    @apply bg-stone-100 hover:bg-stone-200 active:bg-stone-300 text-stone-700 font-medium px-4 py-2 rounded-lg transition-colors duration-150;
+  }
+
+  .input-number {
+    @apply w-28 text-right border border-stone-200 rounded-lg px-3 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all;
+  }
+
+  .table-row-alt:nth-child(even) {
+    @apply bg-stone-50/60;
+  }
+
+  .badge-low {
+    @apply inline-flex items-center gap-1 text-xs font-medium bg-red-50 text-red-600 px-2 py-0.5 rounded-full;
+  }
+
+  .badge-ok {
+    @apply inline-flex items-center gap-1 text-xs font-medium bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full;
+  }
+}
