@@ -5,6 +5,9 @@ import Navbar from "@/components/Navbar";
 export const metadata: Metadata = {
   title: "Soes Merdeka | Manajemen Stok Gudang Dapur",
   description: "Sistem manajemen stok gudang dapur internal",
+  icons: {
+    icon: "/logo.ico",
+  },
 };
 
 export default function RootLayout({
