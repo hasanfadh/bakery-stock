@@ -3,8 +3,8 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
-  title: "Soes Merdeka | Manajemen Stok Dapur",
-  description: "Sistem manajemen stok dapur internal",
+  title: "Soes Merdeka | Manajemen Stok Gudang Dapur",
+  description: "Sistem manajemen stok gudang dapur internal",
 };
 
 export default function RootLayout({
