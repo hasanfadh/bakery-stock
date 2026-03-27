@@ -85,3 +85,7 @@ export async function koreksiStok(
 ) {
   return apiPost({ action: "koreksiStok", user, tipe, items });
 }
+
+export async function bahanKeluar(user: string, items: { id_bahan: string; qty: number }[]) {
+  return apiPost({ action: "bahanKeluar", user, items });
+}
