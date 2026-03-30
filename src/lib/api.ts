@@ -37,6 +37,17 @@ export interface MasterData {
   bom: BomItem[];
 }
 
+// ✨ NEW: Setengah Jadi
+export interface SetengahJadi {
+  id_setengah_jadi: string;
+  nama: string;
+  stok: number;
+}
+
+export interface SetengahJadiData {
+  setengah_jadi: SetengahJadi[];
+}
+
 // GET request — pakai query param, tidak perlu header khusus
 async function apiGet(url: string) {
   const res = await fetch(url, { cache: "no-store" });
@@ -88,4 +99,16 @@ export async function koreksiStok(
 
 export async function bahanKeluar(user: string, items: { id_bahan: string; qty: number }[]) {
   return apiPost({ action: "bahanKeluar", user, items });
+}
+
+// ✨ NEW: Setengah Jadi
+export async function getSetengahJadiData(): Promise<SetengahJadiData> {
+  return apiGet(`${getApiUrl()}?action=getSetengahJadi`);
+}
+
+export async function koreksiSetengahJadi(
+  user: string,
+  items: { id: string; delta: number }[]
+) {
+  return apiPost({ action: "koreksiSetengahJadi", user, items });
 }
