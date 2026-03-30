@@ -1,9 +1,9 @@
 "use client";
 export const dynamic = "force-dynamic";
 import { useEffect, useState } from "react";
-import { getMasterData, MasterData } from "@/lib/api";
+import { getMasterData, getSetengahJadiData, MasterData, SetengahJadi } from "@/lib/api";
 
-type Tab = "bahan" | "resep";
+type Tab = "bahan" | "resep" | "setengah_jadi";
 
 export default function HomePage() {
   const [data, setData] = useState<MasterData | null>(null);
@@ -11,12 +11,32 @@ export default function HomePage() {
   const [tab, setTab] = useState<Tab>("bahan");
   const [error, setError] = useState("");
 
+  const [sjData, setSjData] = useState<SetengahJadi[] | null>(null);
+  const [sjLoading, setSjLoading] = useState(false);
+  const [sjError, setSjError] = useState("");
+  const [sjLoaded, setSjLoaded] = useState(false); // supaya fetch hanya sekali
+
   useEffect(() => {
     getMasterData()
       .then(setData)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
+
+  // Fetch setengah jadi hanya saat tab diklik, dan hanya sekali
+  const handleTabChange = (t: Tab) => {
+    setTab(t);
+    if (t === "setengah_jadi" && !sjLoaded) {
+      setSjLoading(true);
+      getSetengahJadiData()
+        .then((d) => {
+          setSjData(d.setengah_jadi);
+          setSjLoaded(true);
+        })
+        .catch((e) => setSjError(e.message))
+        .finally(() => setSjLoading(false));
+    }
+  };
 
   const lowStockCount = data?.bahan.filter(
     (b) => b.stok_gudang < b.minimum_stok
@@ -44,7 +64,7 @@ export default function HomePage() {
       <div className="card overflow-hidden">
         <div className="flex border-b border-stone-100">
           <button
-            onClick={() => setTab("bahan")}
+            onClick={() => handleTabChange("bahan")}
             className={`flex-1 py-3 text-sm font-semibold transition-colors ${
               tab === "bahan"
                 ? "text-amber-600 border-b-2 border-amber-500 bg-amber-50/50"
@@ -59,7 +79,7 @@ export default function HomePage() {
             )}
           </button>
           <button
-            onClick={() => setTab("resep")}
+            onClick={() => handleTabChange("resep")}
             className={`flex-1 py-3 text-sm font-semibold transition-colors ${
               tab === "resep"
                 ? "text-amber-600 border-b-2 border-amber-500 bg-amber-50/50"
@@ -73,16 +93,32 @@ export default function HomePage() {
               </span>
             )}
           </button>
+          <button
+            onClick={() => handleTabChange("setengah_jadi")}
+            className={`flex-1 py-3 text-sm font-semibold transition-colors ${
+              tab === "setengah_jadi"
+                ? "text-amber-600 border-b-2 border-amber-500 bg-amber-50/50"
+                : "text-stone-500 hover:text-stone-700"
+            }`}
+          >
+            Setengah Jadi
+            {sjData && (
+              <span className="ml-2 text-xs bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full">
+                {sjData.length}
+              </span>
+            )}
+          </button>
         </div>
 
-        {loading && (
+        {/* Loading state bahan/resep */}
+        {loading && tab !== "setengah_jadi" && (
           <div className="flex items-center justify-center py-16 text-stone-400">
             <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mr-3" />
             Memuat data…
           </div>
         )}
 
-        {error && (
+        {error && tab !== "setengah_jadi" && (
           <div className="p-6 text-center text-red-500 text-sm">{error}</div>
         )}
 
@@ -109,12 +145,8 @@ export default function HomePage() {
                         i % 2 === 1 ? "bg-stone-50/40" : ""
                       } ${isLow ? "bg-red-50/40 hover:bg-red-50/60" : ""}`}
                     >
-                      <td className="px-4 py-3 font-medium text-stone-800">
-                        {b.nama_bahan}
-                      </td>
-                      <td className="px-4 py-3 text-center text-stone-500">
-                        {b.satuan}
-                      </td>
+                      <td className="px-4 py-3 font-medium text-stone-800">{b.nama_bahan}</td>
+                      <td className="px-4 py-3 text-center text-stone-500">{b.satuan}</td>
                       <td className={`px-4 py-3 text-right font-mono font-semibold ${isLow ? "text-red-600" : "text-stone-800"}`}>
                         {b.stok_gudang.toLocaleString("id-ID")}
                       </td>
@@ -178,6 +210,55 @@ export default function HomePage() {
             </table>
           </div>
         )}
+
+        {/* Tabel Setengah Jadi */}
+        {tab === "setengah_jadi" && (
+          <>
+            {sjLoading && (
+              <div className="flex items-center justify-center py-16 text-stone-400">
+                <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mr-3" />
+                Memuat data…
+              </div>
+            )}
+            {sjError && (
+              <div className="p-6 text-center text-red-500 text-sm">{sjError}</div>
+            )}
+            {!sjLoading && !sjError && sjData && (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-stone-100 text-stone-500 text-xs uppercase tracking-wide">
+                      <th className="text-left px-4 py-3 font-semibold">Nama Produk</th>
+                      <th className="text-right px-4 py-3 font-semibold">Stok</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sjData.map((item, i) => (
+                      <tr
+                        key={item.id_setengah_jadi}
+                        className={`border-b border-stone-50 hover:bg-amber-50/30 transition-colors ${
+                          i % 2 === 1 ? "bg-stone-50/40" : ""
+                        }`}
+                      >
+                        <td className="px-4 py-3 font-medium text-stone-800">{item.nama}</td>
+                        <td className="px-4 py-3 text-right font-mono font-semibold text-stone-800">
+                          {item.stok.toLocaleString("id-ID")}
+                        </td>
+                      </tr>
+                    ))}
+                    {sjData.length === 0 && (
+                      <tr>
+                        <td colSpan={2} className="px-4 py-10 text-center text-stone-400">
+                          Belum ada data setengah jadi
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {!loading && data && (
@@ -186,10 +267,22 @@ export default function HomePage() {
           <button
             onClick={() => {
               setLoading(true);
+              setError("");
               getMasterData()
                 .then(setData)
                 .catch((e) => setError(e.message))
                 .finally(() => setLoading(false));
+              // Reset sj supaya re-fetch saat tab diklik lagi
+              if (tab === "setengah_jadi") {
+                setSjLoading(true);
+                setSjLoaded(false);
+                getSetengahJadiData()
+                  .then((d) => { setSjData(d.setengah_jadi); setSjLoaded(true); })
+                  .catch((e) => setSjError(e.message))
+                  .finally(() => setSjLoading(false));
+              } else {
+                setSjLoaded(false);
+              }
             }}
             className="text-amber-500 hover:underline"
           >

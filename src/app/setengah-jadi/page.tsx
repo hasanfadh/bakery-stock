@@ -44,7 +44,7 @@ export default function SetengahJadiPage() {
       }));
 
       const result = await koreksiSetengahJadi(user, payload);
-      addToast("success", `${payload.length} koreksi berhasil disimpan`, result.ref_no);
+      addToast("success", `${payload.length} koreksi Setengah Jadi berhasil disimpan`, result.ref_no);
       setAktual({});
       await fetchData();
     } catch (e: unknown) {
