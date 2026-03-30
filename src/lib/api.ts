@@ -37,7 +37,7 @@ export interface MasterData {
   bom: BomItem[];
 }
 
-// ✨ NEW: Setengah Jadi
+// Setengah Jadi
 export interface SetengahJadi {
   id_setengah_jadi: string;
   nama: string;
@@ -50,7 +50,7 @@ export interface SetengahJadiData {
 
 // GET request — pakai query param, tidak perlu header khusus
 async function apiGet(url: string) {
-  const res = await fetch(url, { cache: "no-store" });
+  const res = await fetch(url, { cache: "no-store", redirect: "follow"  });
   if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
   const data = await res.json();
   if (data.error) throw new Error(data.error);
@@ -101,7 +101,7 @@ export async function bahanKeluar(user: string, items: { id_bahan: string; qty: 
   return apiPost({ action: "bahanKeluar", user, items });
 }
 
-// ✨ NEW: Setengah Jadi
+// Setengah Jadi
 export async function getSetengahJadiData(): Promise<SetengahJadiData> {
   return apiGet(`${getApiUrl()}?action=getSetengahJadi`);
 }
