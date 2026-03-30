@@ -10,7 +10,7 @@ export default function SetengahJadiPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState("");
-  const [deltas, setDeltas] = useState<Record<string, string>>({});
+  const [aktual, setAktual] = useState<Record<string, string>>({});
   const { toasts, addToast, removeToast } = useToast();
 
   const fetchData = () => {
@@ -24,11 +24,11 @@ export default function SetengahJadiPage() {
     fetchData();
   }, []);
 
+  // Item dianggap diisi jika user sudah input angka (termasuk 0)
   const filledItems = items.filter(
     (item) =>
-      deltas[item.id_setengah_jadi] !== undefined &&
-      deltas[item.id_setengah_jadi] !== "" &&
-      Number(deltas[item.id_setengah_jadi]) !== 0
+      aktual[item.id_setengah_jadi] !== undefined &&
+      aktual[item.id_setengah_jadi] !== ""
   );
 
   const canSave = user && filledItems.length > 0 && !saving;
@@ -39,12 +39,13 @@ export default function SetengahJadiPage() {
     try {
       const payload = filledItems.map((item) => ({
         id: item.id_setengah_jadi,
-        delta: Number(deltas[item.id_setengah_jadi]),
+        aktual: Number(aktual[item.id_setengah_jadi]),
+        // delta dihitung di sisi GAS dari (aktual - stok_sekarang)
       }));
 
       const result = await koreksiSetengahJadi(user, payload);
       addToast("success", `${payload.length} koreksi berhasil disimpan`, result.ref_no);
-      setDeltas({});
+      setAktual({});
       await fetchData();
     } catch (e: unknown) {
       addToast("error", e instanceof Error ? e.message : "Gagal menyimpan");
@@ -60,7 +61,7 @@ export default function SetengahJadiPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-stone-800">Stok Setengah Jadi</h1>
         <p className="text-stone-500 text-sm mt-1">
-          Masukkan delta (+/-) untuk koreksi stok setengah jadi. Nilai positif menambah, negatif mengurangi.
+          Masukkan stok aktual hasil hitung fisik. Selisih akan dihitung otomatis.
         </p>
       </div>
 
@@ -103,64 +104,66 @@ export default function SetengahJadiPage() {
               <thead>
                 <tr className="border-b border-stone-100 text-stone-500 text-xs uppercase tracking-wide">
                   <th className="text-left px-4 py-3 font-semibold">Nama Produk</th>
-                  <th className="text-right px-4 py-3 font-semibold">Stok Saat Ini</th>
-                  <th className="text-right px-4 py-3 font-semibold w-36">Delta (+/-)</th>
-                  <th className="text-right px-4 py-3 font-semibold">Setelah</th>
+                  <th className="text-right px-4 py-3 font-semibold">Stok Sistem</th>
+                  <th className="text-right px-4 py-3 font-semibold w-36">Stok Aktual</th>
+                  <th className="text-right px-4 py-3 font-semibold">Selisih</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((item, i) => {
                   const id = item.id_setengah_jadi;
-                  const val = deltas[id] ?? "";
-                  const delta = val !== "" ? Number(val) : 0;
-                  const afterStok = item.stok + delta;
-                  const hasVal = val !== "" && delta !== 0;
+                  const val = aktual[id] ?? "";
+                  const aktualNum = val !== "" ? Number(val) : null;
+                  const delta = aktualNum !== null ? aktualNum - item.stok : null;
+                  const hasVal = val !== "";
                   return (
                     <tr
                       key={id}
                       className={`border-b border-stone-50 transition-colors ${
-                        hasVal
+                        hasVal && delta !== null
                           ? delta > 0
                             ? "bg-emerald-50/50"
-                            : "bg-red-50/40"
+                            : delta < 0
+                            ? "bg-red-50/40"
+                            : "bg-stone-50/40"
                           : i % 2 === 1
                           ? "bg-stone-50/40 hover:bg-stone-50"
                           : "hover:bg-stone-50/60"
                       }`}
                     >
                       <td className="px-4 py-3 font-medium text-stone-800">{item.nama}</td>
-                      <td className="px-4 py-3 text-right font-mono font-semibold text-stone-700">
+                      <td className="px-4 py-3 text-right font-mono font-semibold text-stone-500">
                         {item.stok.toLocaleString("id-ID")}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <input
                           type="number"
-                          placeholder="0"
+                          placeholder={item.stok.toString()}
                           value={val}
                           onChange={(e) =>
-                            setDeltas((prev) => ({ ...prev, [id]: e.target.value }))
+                            setAktual((prev) => ({ ...prev, [id]: e.target.value }))
                           }
                           className={`input-number ${
-                            delta > 0
+                            delta !== null && delta > 0
                               ? "border-emerald-300 text-emerald-700 focus:ring-emerald-400"
-                              : delta < 0
+                              : delta !== null && delta < 0
                               ? "border-red-300 text-red-700 focus:ring-red-400"
                               : ""
                           }`}
                         />
                       </td>
                       <td className="px-4 py-3 text-right font-mono">
-                        {hasVal ? (
+                        {hasVal && delta !== null ? (
                           <span
                             className={`font-bold text-sm ${
-                              afterStok < 0
-                                ? "text-red-600"
-                                : delta > 0
+                              delta > 0
                                 ? "text-emerald-600"
-                                : "text-stone-700"
+                                : delta < 0
+                                ? "text-red-600"
+                                : "text-stone-400"
                             }`}
                           >
-                            {afterStok.toLocaleString("id-ID")}
+                            {delta > 0 ? "+" : ""}{delta.toLocaleString("id-ID")}
                           </span>
                         ) : (
                           <span className="text-stone-300">—</span>

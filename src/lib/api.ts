@@ -49,8 +49,10 @@ export interface SetengahJadiData {
 }
 
 // GET request — pakai query param, tidak perlu header khusus
+// redirect: "follow" diperlukan karena Apps Script selalu redirect GET
+// ke domain googleusercontent.com
 async function apiGet(url: string) {
-  const res = await fetch(url, { cache: "no-store", redirect: "follow"  });
+  const res = await fetch(url, { cache: "no-store", redirect: "follow" });
   if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
   const data = await res.json();
   if (data.error) throw new Error(data.error);
@@ -92,7 +94,7 @@ export async function resepKeluar(user: string, items: { id_resep: string; batch
 export async function koreksiStok(
   user: string,
   tipe: "koreksi_bahan" | "koreksi_resep",
-  items: { id: string; delta: number }[]
+  items: { id: string; aktual: number }[]
 ) {
   return apiPost({ action: "koreksiStok", user, tipe, items });
 }
@@ -108,7 +110,7 @@ export async function getSetengahJadiData(): Promise<SetengahJadiData> {
 
 export async function koreksiSetengahJadi(
   user: string,
-  items: { id: string; delta: number }[]
+  items: { id: string; aktual: number }[]
 ) {
   return apiPost({ action: "koreksiSetengahJadi", user, items });
 }
