@@ -10,6 +10,7 @@ const navItems = [
   { href: "/resep-masuk", label: "Resep Masuk" },
   { href: "/resep-keluar", label: "Resep Keluar" },
   { href: "/setengah-jadi", label: "Setengah Jadi" },
+  { href: "/koreksi", label: "Koreksi Stok" },
 ];
 
 export default function Navbar() {
